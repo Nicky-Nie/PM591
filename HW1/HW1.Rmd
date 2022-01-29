@@ -56,34 +56,93 @@ R2_train_all <- 1-RSS_all/TSS_all
 pred_all <- predict(model_all, newdata = brain_test)
 RMSE_test_all <- sqrt(sum((brain_test$Brain.weight-pred_all)^2)/nrow(brain_test))
 R2_test_all <- 1-sum((brain_test$Brain.weight-pred_all)^2)/sum((brain_test$Brain.weight-mean(brain_test$Brain.weight))^2)
-tab <- list(
-RMSE_train_all = RMSE_train_all,
-RMSE_train_alone = RMSE_train_alone,
-RMSE_test_all = RMSE_test_all,
-RMSE_test_alone = RMSE_test_alone,
-R_square_train_all = R2_train_all,
-R_square_train_alone = R2_train_alone,
-R_sqaure_test_all = R2_test_all,
-R_sqaure_test_alone = R2_test_alone)
-tab
 ```
+```{r}
+tab_rmse <- data.frame(RMSE_train_all,RMSE_train_alone,RMSE_test_all,RMSE_test_alone)
+knitr::kable(tab_rmse)
+```
+
+```{r}
+tab_r2 <- data.frame(R2_train_all,R2_train_alone,R2_test_all,R2_test_alone)
+knitr::kable(tab_r2)
+```
+
+
+
 The interpretation of coefficients of Age and Sex is that Brain size will increase in 0.2264196 unit as sex increases in one unit and Brain size will decrease in 25.0911009 units as age increases in one unit.
 Adding Age improves prediction performance over the model with Sex and Head size alone
 
-e. Explore whether fitting a linear regression model with separate intercepts and separate slopes for $20 \le$ Age $<$ 46 and Age $\ge$ 46 improves prediction performance (hint: you can, for example, specify an interaction between Sex and Head size including `` Head.Size:Age`` in the model formula.
+e. Explore whether fitting a linear regression model with separate intercepts and separate slopes for $20 \le$ Age $<$ 46 and Age $\ge$ 46 improves prediction performance over the model *Brain.weight ~ Age + Brain.size* (hint: you can, for example, specify an interaction between Sex and Head size including `` Head.Size:Age`` in the model formula.
+```{r}
+model3 <- lm(Brain.weight~Age+Head.size+Head.size:Age, data = brain_train)
+RMSE_train3 <-sqrt(sum(residuals(model3)^2)/nrow(brain_train))
+RSS3 <- sum(residuals(model3)^2)
+TSS3 <- sum((brain_train$Brain.weight-mean(brain_train$Brain.weight))^2)
+R2_train3 <- 1-RSS3/TSS3
+pred3 <- predict(model3, newdata = brain_test)
+RMSE_test3 <- sqrt(sum((brain_test$Brain.weight-pred3)^2)/nrow(brain_test))
+R2_test3 <- 1-sum((brain_test$Brain.weight-pred3)^2)/sum((brain_test$Brain.weight-mean(brain_test$Brain.weight))^2)
+```
+
+```{r}
+model3_alone <- lm(Brain.weight~Age+Head.size, data = brain_train)
+RMSE_train3_alone <-sqrt(sum(residuals(model3_alone)^2)/nrow(brain_train))
+RSS3_alone <- sum(residuals(model3_alone)^2)
+TSS3_alone <- sum((brain_train$Brain.weight-mean(brain_train$Brain.weight))^2)
+R2_train3_alone <- 1-RSS3_alone/TSS3_alone
+pred3_alone <- predict(model3_alone, newdata = brain_test)
+RMSE_test3_alone <- sqrt(sum((brain_test$Brain.weight-pred3_alone)^2)/nrow(brain_test))
+R2_test3_alone <- 1-sum((brain_test$Brain.weight-pred3_alone)^2)/sum((brain_test$Brain.weight-mean(brain_test$Brain.weight))^2)
+```
+
+
+```{r}
+tab_rmse <- data.frame(RMSE_train3,RMSE_train3_alone,RMSE_test3,RMSE_test3_alone)
+knitr::kable(tab_rmse)
+```
+```{r}
+tab_r2 <- data.frame(R2_train3,R2_train3_alone,R2_test3,R2_test3_alone)
+knitr::kable(tab_r2)
+```
+
+It improves in trainset but not in testset.
 
 f. Compare your results from e. to fitting two separate models: Brain.weight ~ Age + Brain.size for individuals $20 \le$ Age $<$ 46 and `Brain.weight ~ Age + Brain.size`` for individuals Age $\ge$ 46. Is this equivalent to the single model you fitted in e.? Explain (hint: think about the residual sum of squares
 being minimized in each case to obtain the model coefficients).
+```{r}
+brain_train_young <- dplyr::filter(brain_train, brain_train$Age=="20-46")
+brain_test_young <- dplyr::filter(brain_test, brain_test$Age=="20-46")
+model4 <- lm(Brain.weight~Head.size, data = brain_train_young)
+```
+
+```{r}
+brain_train_old <- dplyr::filter(brain_train, brain_train$Age=="46+")
+brain_test_old <- dplyr::filter(brain_test, brain_test$Age=="46+")
+model5 <- lm(Brain.weight~Head.size, data = brain_train_old)
+```
+
+
+```{r}
+summary(model3_alone)
+```
+
+```{r}
+summary(model4)
+```
+
+```{r}
+summary(model5)
+```
+
+They are different since coefficients are obtained by minimizing residual sum of squares, when more data evolved in the model, residual sum of squares of the original model will increase and maynot be the minimum one, hence the coefficients will change and then prodece a new model.
 
 ## 2. Write a R function Rsq to compute $R^2$. 
 The function should take two vector arguments observed and predicted and return $R^2$. Given the correct inputes it should be able to compute training and test $R^2$s.
 ```{r r_square_function}
-#x,y are vectors input and only R sqaure will be output
-Rsq <- function(x,y){
-  RSS = sum((x-y)^2)
-  TSS = sum((x-mean(x))^2)
+Rsq <- function(obs,pred){
+  RSS = sum((obs-pred)^2)
+  TSS = sum((obs-mean(obs))^2)
   R2 = 1-RSS/TSS
-  print(R2)
 }
 ```
 
@@ -92,9 +151,8 @@ Rsq <- function(x,y){
 ## 1.Simulation study
 You will perform a small simulation study to investigate the degree to which assessing prediction performance in *the same data* used to train/fit a model -- rather than using a separate test dataset -- leads to an overly optimistic assessment of prediction performance. Of particular interest is to investigate how the degree of overoptimistic assessment is affected by i) the size of the training data and ii) the level of noise in the data. The simulation will loosely mimic the brain weight data.
 
-a. Set the training sample size to ``n_train=100``, the test sample size to ``n_test=50``, and the total sample size to ``n = n_train + n_test = 150`` (the train/test split is 2/3 train to 1/3 test rather than the more usual 0.8 to 0.2 to prevent the test set from being too small).
+1. Set the training sample size to ``n_train=100``, the test sample size to ``n_test=50``, and the total sample size to ``n = n_train + n_test = 150`` (the train/test split is 2/3 train to 1/3 test rather than the more usual 0.8 to 0.2 to prevent the test set from being too small).
 ```{r}
-set.seed(12)
 n_train <- 100
 n_test <- 50
 n <- n_train + n_test
@@ -152,26 +210,93 @@ test_set <- brain_new[-train,]
 
 9. Fit the model ``Brain.weight ~ b0 + ba * Age + bs * Sex + bh * Head.size`` to the training data.
 ```{r}
-lm_model2 <- lm(Brain.weight~Age+Sex+Head.size, data = train_set)
+model2 <- function(Sex, Age, Head.size){
+  pred = beta_0 + beta_A*Age + beta_S*Sex + beta_H*Head.size
+}
+```
+
+```{r}
+rmse <- function(obs,pred){
+  sqrt(mean((obs-pred)^2))
+}
 ```
 
 
+```{r}
+train_set$pred <- model2(train_set$Sex, train_set$Age, train_set$Head.size)
+test_set$pred <- model2(test_set$Sex, test_set$Age, test_set$Head.size)
+```
+
 10. Compute the training and test RMSE and $R^2$.
 ```{r}
-
+rmse_train <- rmse(train_set$Brain.weight, train_set$pred)
+r2_train <- Rsq(train_set$Brain.weight, train_set$pred)
+rmse_test <- rmse(test_set$Brain.weight, test_set$pred)
+r2_test <- Rsq(test_set$Brain.weight, test_set$pred)
+tab <- data.frame(rmse_train, rmse_test, r2_train, r2_test)
+knitr::kable(tab)
 ```
 
 
 11. Repeat steps 2 to 10 100 times (save the RMSE's and $R^2$'s from each simulation replicate).
+```{r}
+result <- data.frame(1:100,0,0,0,0)
+colnames(result) <- c("NO_sim","rmse_train", "rmse_test", "r2_train", "r2_test")
+for (i in 1:100){
+  Head.size <- rnorm(n, mean = mean(brain$Head.size), sd = sd(brain$Head.size))
+  Malefreq <- sum(brain$Sex == "Male")/length(brain$Sex)
+Sex <- rbinom(n, size = 1, prob = Malefreq)
+  youngfreq <- sum(brain$Age == "20-46")/length(brain$Age)
+  Age <- rbinom(n, size = 1, prob = youngfreq)
+  lm_model <- lm(Brain.weight~Age+Sex+Head.size, data = brain)
+  beta_0 <- summary(lm_model)$coefficients[1,1]
+  beta_A <- summary(lm_model)$coefficients[2,1]
+  beta_S <- summary(lm_model)$coefficients[3,1]
+  beta_H <- summary(lm_model)$coefficients[4,1]
+  Brain.weight <- beta_0 + beta_A*Age + beta_S*Sex + beta_H * Head.size
+  noise <- rnorm(n, mean=0, sd = summary(lm_model)$sigma)
+  Brain.weight <- Brain.weight + noise
+  brain_new <- data.frame(Sex, Age, Brain.weight, Head.size)
+  train <- sample(1:n, n_train)
+  train_set <- brain_new[train,]
+  test_set <- brain_new[-train,]
+  model2 <- function(Sex, Age, Head.size){
+    pred = beta_0 + beta_A*Age + beta_S*Sex + beta_H*Head.size
+  }
+  train_set$pred <- model2(train_set$Sex, train_set$Age, train_set$Head.size)
+  test_set$pred <- model2(test_set$Sex, test_set$Age, test_set$Head.size)
+  rmse_train <- rmse(train_set$Brain.weight, train_set$pred)
+  r2_train <- Rsq(train_set$Brain.weight, train_set$pred)
+  rmse_test <- rmse(test_set$Brain.weight, test_set$pred)
+  r2_test <- Rsq(test_set$Brain.weight, test_set$pred)
+  result[i,] <- data.frame(i, rmse_train, rmse_test, r2_train, r2_test)
+}
+```
+
 
 12. Compute the average training and test RMSE ($R^2$) across the 100 simulation replicates. 
+```{r}
+train_rmse_avg <- mean(result$rmse_train)
+train_r2_avg <- mean(result$r2_train)
+test_rmse_avg <- mean(result$rmse_test)
+test_r2_avg <- mean(result$r2_test)
+tab_mean <- data.frame(train_rmse_avg, train_r2_avg, test_rmse_avg, test_r2_avg)
+knitr::kable(tab_mean)
+```
 
-13. Visually (e.g. scatter plot, boxplot) evaluate the degree of optimistic assessment when
-training and testing on the same data.
+
+13. Visually (e.g. scatter plot, boxplot) evaluate the degree of optimistic assessment when training and testing on the same data.
+```{r}
+library("ggplot2")
+```
 
 14. Comment on the results of the simulation.
 
+
 15. Investigate how the results change as the standard deviation of the noise variable ``noise`` gets larger (say 1.5- and 2-fold lager than in the baseline simulation). Summarize and comment on your results.
+```{r}
+
+```
  
 
 
