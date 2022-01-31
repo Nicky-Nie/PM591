@@ -2,10 +2,11 @@
 title: "PM591 Assignment01"
 author: "NickyNie"
 date: "1/26/2022"
-output: 
-  - html_document
+output:
   - github_document
-always_allow_html: true
+  - html_document
+  - pdf_document
+always_allow_html: True
 ---
 ```{r setup, message=FALSE}
 options(scipen = 1, digits = 4)
@@ -181,7 +182,7 @@ Age <- rbinom(n, size = 1, prob = youngfreq)
 ```
 
 
-5. Generate a variable/vector ``Brain.weight`` of size ``n`` according to the linear model ``Brain.weight = b0 + ba * Age + bs * Sex + bh * Head.size``. Use the coefficients $\widehat{\beta_0}, \widehat{\beta_{A}},  \widehat{\beta_{S}}$, and $\widehat{\beta_{H}}$ obtained from fitting the corresponding linear regression model to the full real brain weight dataset. 
+5. Generate a variable/vector ``Brain.weight`` of size ``n`` according to the linear model ``Brain.weight = b0 + ba * Age + bs * Sex + bh * Head.size``. Use the coefficients beta_0, beta_{A},  beta_S, and beta_H obtained from fitting the corresponding linear regression model to the full real brain weight dataset. 
 ```{r}
 lm_model <- lm(Brain.weight~Age+Sex+Head.size, data = brain)
 beta_0 <- summary(lm_model)$coefficients[1,1]
