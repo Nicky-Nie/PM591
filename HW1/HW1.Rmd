@@ -7,6 +7,10 @@ output:
   - github_document
 always_allow_html: true
 ---
+```{r setup, message=FALSE}
+options(scipen = 1, digits = 4)
+```
+
 
 ## Analysis
 ## 1. Re-analysis of the brain weight data
@@ -288,17 +292,65 @@ knitr::kable(tab_mean)
 13. Visually (e.g. scatter plot, boxplot) evaluate the degree of optimistic assessment when training and testing on the same data.
 ```{r}
 library("ggplot2")
+ggplot(data = result)+
+  geom_point(mapping = aes(x = NO_sim, y = rmse_train, color = "rmse_train"))+
+  geom_point(mapping = aes(x = NO_sim, y = rmse_test, color = "rmse_test"))+
+  geom_smooth(mapping = aes(x = NO_sim, y = rmse_train, color = "rmse_train"))+
+  geom_smooth(mapping = aes(x = NO_sim, y = rmse_test, color = "rmse_test"))+
+  labs(x = "Number of simulation", y = "rmse")
+```
+```{r}
+ggplot(data = result)+
+  geom_point(mapping = aes(x = NO_sim, y = r2_train, color = "r2_train"))+
+  geom_point(mapping = aes(x = NO_sim, y = r2_test, color = "r2_test"))+
+  geom_smooth(mapping = aes(x = NO_sim, y = r2_train, color = "r2_train"))+
+  geom_smooth(mapping = aes(x = NO_sim, y = r2_test, color = "r2_test"))+
+  labs(x = "Number of simulation", y = "r square")
 ```
 
 14. Comment on the results of the simulation.
 
+rmse of simulations in train and test are between 65 and 75 and r square of simulations in train and test are between 0.55 and 0.65. And they are stable in training set but not stable in testing set probably because of fewer data in test set.
 
 15. Investigate how the results change as the standard deviation of the noise variable ``noise`` gets larger (say 1.5- and 2-fold lager than in the baseline simulation). Summarize and comment on your results.
 ```{r}
-
+result2 <- data.frame(1:10,0,0,0,0,0)
+colnames(result2) <- c("NO_sim", "sd_noise" ,"rmse_train", "rmse_test", "r2_train", "r2_test")
+for (i in 1:10){
+  set.seed(2022)
+  Head.size <- rnorm(n, mean = mean(brain$Head.size), sd = sd(brain$Head.size))
+  Malefreq <- sum(brain$Sex == "Male")/length(brain$Sex)
+  Sex <- rbinom(n, size = 1, prob = Malefreq)
+  youngfreq <- sum(brain$Age == "20-46")/length(brain$Age)
+  Age <- rbinom(n, size = 1, prob = youngfreq)
+  lm_model <- lm(Brain.weight~Age+Sex+Head.size, data = brain)
+  beta_0 <- summary(lm_model)$coefficients[1,1]
+  beta_A <- summary(lm_model)$coefficients[2,1]
+  beta_S <- summary(lm_model)$coefficients[3,1]
+  beta_H <- summary(lm_model)$coefficients[4,1]
+  Brain.weight <- beta_0 + beta_A*Age + beta_S*Sex + beta_H * Head.size
+  sd_noise = summary(lm_model)$sigma * (0.5+i*0.5)
+  noise <- rnorm(n, mean=0, sd = sd_noise)
+  Brain.weight <- Brain.weight + noise
+  brain_new <- data.frame(Sex, Age, Brain.weight, Head.size)
+  train <- sample(1:n, n_train)
+  train_set <- brain_new[train,]
+  test_set <- brain_new[-train,]
+  model2 <- function(Sex, Age, Head.size){
+    pred = beta_0 + beta_A*Age + beta_S*Sex + beta_H*Head.size
+  }
+  train_set$pred <- model2(train_set$Sex, train_set$Age, train_set$Head.size)
+  test_set$pred <- model2(test_set$Sex, test_set$Age, test_set$Head.size)
+  rmse_train <- rmse(train_set$Brain.weight, train_set$pred)
+  r2_train <- Rsq(train_set$Brain.weight, train_set$pred)
+  rmse_test <- rmse(test_set$Brain.weight, test_set$pred)
+  r2_test <- Rsq(test_set$Brain.weight, test_set$pred)
+  result2[i,] <- data.frame(i, sd_noise, rmse_train, rmse_test, r2_train, r2_test)
+}
+knitr::kable(result2)
 ```
  
-
+As the standard deviation of noise increases, both rmse of train and test increase and r square of train and test decrease.
 
 
 
