@@ -43,7 +43,7 @@ for (i in 1:15){
 }
 ```
 
-    a. Plot the validation RMSE as a function of $K$ and select the best K.
+    b. Plot the validation RMSE as a function of $K$ and select the best K.
 
 ``` r
 library(ggplot2)
@@ -62,15 +62,15 @@ which.min(rmse$rmse)
 
 The best k is 5, which is 85.98209
 
-3.  Using the validation RMSE compare to the best linear regression
-    model from homework 1. Is there an improvement in prediction
-    performance? Interpret your results based on the bias-variance
-    tradeoff. RMSE is greater for knn method compared to the linear
-    regression model in hw1, which does not improve the prediction
-    performance. It might be caused by paying much attention to the
-    training model and hence result in a high variance and hence perform
-    not very well in generaliztion on the data which have never seen
-    before(overfitting).
+    c. Using the validation RMSE compare to the best linear regression model from homework 1. 
+    Is there an improvement in prediction performance?  
+    Interpret your results based on the bias-variance tradeoff.
+
+RMSE is greater for knn method compared to the linear regression model
+in hw1, which does not improve the prediction performance. It might be
+caused by paying much attention to the training model and hence result
+in a high variance and hence perform not very well in generaliztion on
+the data which have never seen before(overfitting).
 
 <br>
 
@@ -603,6 +603,7 @@ ggplot(data = error) +
   labs(x = "classifier complexity", y = "misclassification error")
 ```
 
-![](HW2_files/figure-gfm/unnamed-chunk-19-1.png)<!-- --> As complexity
-increases, the misclassification errors validation set decreases, which
-shows that the fourth model is the best one.
+![](HW2_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+As complexity increases, the misclassification errors validation set
+decreases, which shows that the fourth model is the best one.
