@@ -168,7 +168,7 @@ stroke_lda4
 c. Write an R function ``classificationError`` to compute the overall misclassification error, specificity, and sensitivity of a classifier. The function should take a confusion matrix as its input (which you can create using ``table`` as shown in the lecture) and return a vector with the overall misclassication error, specificity and sensitivity. (Hint: separately compute the three quantities ``error``, ``spec``, and ``sens`` inside the body of the function and then put them together in a vector using ``c(error=error, sensitivity=sens, specificity=spec)`` in the last line of the body of the function before the closing ``}`` -- the last line is by default what a function returns. The returned object can be any R object including a siggle number, a vector, a data.frame or even another function!)
 ```{r}
 classificationError <- function(confMatrix){
-  error <- confMatrix[1,2] + confMatrix[2,1]
+  error <- (confMatrix[1,2] + confMatrix[2,1])/(confMatrix[1,2] + confMatrix[2,1]+confMatrix[1,1] + confMatrix[2,2])
   spec <- confMatrix[1,1]/(confMatrix[1,2]+confMatrix[1,1])
   sens <- confMatrix[2,2]/(confMatrix[2,1]+confMatrix[2,2])
   c(error=error, sensitiviry=sens, specificity=spec)
