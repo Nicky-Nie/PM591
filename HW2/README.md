@@ -590,8 +590,7 @@ error
     ## 3   0.3103448 0.4358974          3
     ## 4   0.3218391 0.4102564          4
 
-I will choose the fourth one with less error both in train set and
-validation set
+I will choose the fourth one with less error validation set
 
 5.  Plot in the same graph the training and test misclassification error
     as a function of classifier complexity. Comment/interpret the plots.
