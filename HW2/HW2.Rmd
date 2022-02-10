@@ -3,6 +3,8 @@ title: "PM 591 Assignment2"
 author: "Nicky Nie"
 date: "2022/02/04"
 output:
+  - github_document
+  - html_document
   - pdf_document
 always_allow_html: True
 ---
