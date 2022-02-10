@@ -3,8 +3,6 @@ title: "PM 591 Assignment2"
 author: "Nicky Nie"
 date: "2022/02/04"
 output:
-  - github_document
-  - html_document
   - pdf_document
 always_allow_html: True
 ---
@@ -49,7 +47,6 @@ for (i in 1:15){
     a. Plot the validation RMSE as a function of $K$ and select the best K.
 ```{r}
 library(ggplot2)
-library(ggforce)
 ggplot(data = rmse)+
   geom_line(mapping = aes(x = k, y = rmse))+
   labs(x = "k", y ="rmse")
@@ -60,8 +57,8 @@ which.min(rmse$rmse)
 ```
 The best k is 5, which is 85.98209
 
-    c. Using the validation RMSE compare to the best linear regression model from homework 1. Is there an improvement in prediction performance?  Interpret your results based on the bias-variance tradeoff.
-    RMSE is greater for knn method compared to the linear regression model in hw1, which does not improve the prediction performance. It might be caused by paying much attention to the training model and hence result in a high variance and hence perform not very well in generaliztion on the data which have never seen before(overfitting). 
+c. Using the validation RMSE compare to the best linear regression model from homework 1. Is there an improvement in prediction performance?  Interpret your results based on the bias-variance tradeoff.
+RMSE is greater for knn method compared to the linear regression model in hw1, which does not improve the prediction performance. It might be caused by paying much attention to the training model and hence result in a high variance and hence perform not very well in generaliztion on the data which have never seen before(overfitting). 
 
     
 <br>
@@ -143,7 +140,7 @@ By excluding all the clinical variables, I choose MaxStenosisByArea, *MaxMaxWall
    
 b. Build LDA classifiers of increasing complexity by including: i) age, sex, and smoking history; ii) all the previous features  + the clinical variables AtrialFibrillation, CoronaryArteryDisease, DiabetesHistory, HypercholesterolemiaHistory, and HypertensionHistory; iii) all the previous features + the most predictive imaging feature based on part b; and iv) all the previous features + the next 2 most predictive imaging features.
 ```{r}
-require(MASS) 
+library(MASS) 
 # i
 stroke_lda1 <- lda(Stroke ~ age + sex + SmokingHistory , data=stroke_train)
 stroke_lda1
@@ -172,8 +169,8 @@ c. Write an R function ``classificationError`` to compute the overall misclassif
 ```{r}
 classificationError <- function(confMatrix){
   error <- confMatrix[1,2] + confMatrix[2,1]
-  spec <- confMatrix[2,1]
-  sens <- confMatrix[1,2]
+  spec <- confMatrix[1,1]/(confMatrix[1,2]+confMatrix[1,1])
+  sens <- confMatrix[2,2]/(confMatrix[2,1]+confMatrix[2,2])
   c(error=error, sensitiviry=sens, specificity=spec)
 }
 ```
@@ -245,4 +242,4 @@ ggplot(data = error) +
   geom_line(mapping = aes(x = complexity, y = error_val, color = "error_val")) +
   labs(x = "classifier complexity", y = "misclassification error")
 ```
-As complexity increases, the misclassification errors in both train set and validation set decreases, which shows that the fourth model is the best one.
+As complexity increases, the misclassification errors validation set decreases, which shows that the fourth model is the best one.
