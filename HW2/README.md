@@ -1,7 +1,7 @@
 PM 591 Assignment2
 ================
 Nicky Nie
-2022.02.04
+2022/02/04
 
 <br>
 
@@ -47,7 +47,6 @@ for (i in 1:15){
 
 ``` r
 library(ggplot2)
-library(ggforce)
 ggplot(data = rmse)+
   geom_line(mapping = aes(x = k, y = rmse))+
   labs(x = "k", y ="rmse")
@@ -63,8 +62,15 @@ which.min(rmse$rmse)
 
 The best k is 5, which is 85.98209
 
-    c. Using the validation RMSE compare to the best linear regression model from homework 1. Is there an improvement in prediction performance?  Interpret your results based on the bias-variance tradeoff.
-    RMSE is greater for knn method compared to the linear regression model in hw1, which does not improve the prediction performance. It might be caused by paying much attention to the training model and hence result in a high variance and hence perform not very well in generaliztion on the data which have never seen before(overfitting). 
+3.  Using the validation RMSE compare to the best linear regression
+    model from homework 1. Is there an improvement in prediction
+    performance? Interpret your results based on the bias-variance
+    tradeoff. RMSE is greater for knn method compared to the linear
+    regression model in hw1, which does not improve the prediction
+    performance. It might be caused by paying much attention to the
+    training model and hence result in a high variance and hence perform
+    not very well in generaliztion on the data which have never seen
+    before(overfitting).
 
 <br>
 
@@ -320,12 +326,7 @@ By excluding all the clinical variables, I choose MaxStenosisByArea,
     features + the next 2 most predictive imaging features.
 
 ``` r
-require(MASS) 
-```
-
-    ## 载入需要的程辑包：MASS
-
-``` r
+library(MASS) 
 # i
 stroke_lda1 <- lda(Stroke ~ age + sex + SmokingHistory , data=stroke_train)
 stroke_lda1
@@ -481,9 +482,9 @@ stroke_lda4
 
 ``` r
 classificationError <- function(confMatrix){
-  error <- confMatrix[1,2] + confMatrix[2,1]
-  spec <- confMatrix[2,1]
-  sens <- confMatrix[1,2]
+  error <- (confMatrix[1,2] + confMatrix[2,1])/(confMatrix[1,2] + confMatrix[2,1]+confMatrix[1,1] + confMatrix[2,2])
+  spec <- confMatrix[1,1]/(confMatrix[1,2]+confMatrix[1,1])
+  sens <- confMatrix[2,2]/(confMatrix[2,1]+confMatrix[2,2])
   c(error=error, sensitiviry=sens, specificity=spec)
 }
 ```
@@ -503,14 +504,14 @@ error_train1
 ```
 
     ##       error sensitiviry specificity 
-    ##          35          21          14
+    ##   0.4022989   0.6818182   0.5116279
 
 ``` r
 error_val1
 ```
 
     ##       error sensitiviry specificity 
-    ##          24          12          12
+    ##   0.6153846   0.4000000   0.3684211
 
 ``` r
 # model2
@@ -524,14 +525,14 @@ error_train2
 ```
 
     ##       error sensitiviry specificity 
-    ##          27          14          13
+    ##   0.3103448   0.7045455   0.6744186
 
 ``` r
 error_val2
 ```
 
     ##       error sensitiviry specificity 
-    ##          21           8          13
+    ##   0.5384615   0.3500000   0.5789474
 
 ``` r
 # model3
@@ -545,14 +546,14 @@ error_train3
 ```
 
     ##       error sensitiviry specificity 
-    ##          27          15          12
+    ##   0.3103448   0.7272727   0.6511628
 
 ``` r
 error_val3
 ```
 
     ##       error sensitiviry specificity 
-    ##          17           7          10
+    ##   0.4358974   0.5000000   0.6315789
 
 ``` r
 # model4
@@ -566,14 +567,14 @@ error_train4
 ```
 
     ##       error sensitiviry specificity 
-    ##          28          13          15
+    ##   0.3218391   0.6590909   0.6976744
 
 ``` r
 error_val4
 ```
 
     ##       error sensitiviry specificity 
-    ##          16           8           8
+    ##   0.4102564   0.6000000   0.5789474
 
 ``` r
 error_train <- c(error_train1[1], error_train2[1], error_train3[1],error_train4[1])
@@ -584,10 +585,10 @@ error
 ```
 
     ##   error_train error_val complexity
-    ## 1          35        24          1
-    ## 2          27        21          2
-    ## 3          27        17          3
-    ## 4          28        16          4
+    ## 1   0.4022989 0.6153846          1
+    ## 2   0.3103448 0.5384615          2
+    ## 3   0.3103448 0.4358974          3
+    ## 4   0.3218391 0.4102564          4
 
 I will choose the fourth one with less error both in train set and
 validation set
@@ -604,5 +605,5 @@ ggplot(data = error) +
 ```
 
 ![](HW2_files/figure-gfm/unnamed-chunk-19-1.png)<!-- --> As complexity
-increases, the misclassification errors in both train set and validation
-set decreases, which shows that the fourth model is the best one.
+increases, the misclassification errors validation set decreases, which
+shows that the fourth model is the best one.
