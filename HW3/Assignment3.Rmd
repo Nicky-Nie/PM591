@@ -3,8 +3,7 @@ title: "PM 591 Assignment3"
 author: "Nicky Nie"
 date: "2/24/2022"
 output:
-  - github_document
-always_allow_html: TRUE
+  - pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -19,7 +18,7 @@ a) Build a KNN classifier to predict stroke using the ischemic stroke data and t
 ```{r data_preprocessing}
 library(mlr3)
 
-stroke = read.csv("stroke.csv")
+stroke2 = read.csv("stroke.csv")
 
 stroke$Stroke                      <- factor(stroke$Stroke, levels=c('N', 'Y'), labels=c("No", "Yes"))
 stroke$NASCET                      <- factor(stroke$NASCET, labels=c("No", "Yes"))
@@ -254,6 +253,7 @@ stroke_predict1 <- stroke.lrn1$predict(stroke.tsk, row_ids = rowsval)
 autoplot(stroke_predict1, type="roc")
 auc_lda <- stroke_predict1$score(msr("classif.auc"))
 ```
+
 ```{r qda}
 stroke.lrn2 <- lrn("classif.qda", predict_type = "prob")
 stroke.lrn2$train(stroke.tsk, row_ids=rowstrain)
